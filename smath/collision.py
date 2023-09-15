@@ -9,10 +9,9 @@ def collide_line(l1, l2):
 
     dn = ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
     if dn == 0.0:
-        return True
-
-    uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / dn
-    uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / dn
+        return False
+    uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
+    uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
 
     EPS = 0.0
     return uA >= 0.0 - EPS and uA <= 1.0 + EPS and uB >= 0.0 - EPS and uB <= 1.0 + EPS

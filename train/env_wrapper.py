@@ -33,6 +33,8 @@ class EnvWrapper(gym.Env):
         self.observation_space = spaces.Box(0, 255, self.obs_shape, dtype=np.uint8)
         self.action_space = spaces.MultiDiscrete([5,3])
 
+        self.graph = None
+        self.target_indices = None
         self.num_target_nodes = None
         self.ep_terminate = None
 
@@ -40,6 +42,8 @@ class EnvWrapper(gym.Env):
         self.world = generate_random_map(shape=self.world_shape, options=self.options)
         self.scanner = Scanner(self.world, 120, 48)
 
+        self.graph = Graph([],[])
+        self.target_indices = []
         self.num_target_nodes = 0
         self.ep_terminate = False
 
@@ -101,7 +105,7 @@ class EnvWrapper(gym.Env):
             scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
         obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
 
-        return obs
+        return obs * int(255 / AGENT)
     
     def _get_reward(self, scan_map:np.ndarray, is_valid:bool):
         if not is_valid:
@@ -119,9 +123,9 @@ class EnvWrapper(gym.Env):
         reward = 0.0
 
         if len(contours.vertices) > 4:
-            voronoi, target_indices = to_voronoi(contours, valid_map)
+            self.graph, self.target_indices = to_voronoi(contours, valid_map)
 
-            n_target_nodes = len(target_indices)
+            n_target_nodes = len(self.target_indices)
             if n_target_nodes < self.num_target_nodes:
                 reward = REWARD
 
@@ -145,6 +149,11 @@ class EnvWrapper(gym.Env):
         world_buffer[np.where(scan_map == EMPTY)] = (64,64,64)
         world_buffer[np.where(scan_map == SCANNED)] = (255,0,255)
         world_buffer[np.where(scan_map == IN_VIEW)] = (0,128,128)
+        world_buffer = self.graph.draw(world_buffer)
+        for i in self.target_indices:    # Draw target vertices
+            v = self.graph.vertices[i]
+            v = (int(v[0]), int(v[1]))
+            world_buffer = cv.rectangle(world_buffer, (v[1]-2, v[0]-2), (v[1]+2, v[0]+2), (0,0,255), cv.FILLED)
         world_buffer = cv.circle(world_buffer, (int(scanner_pos[1]), int(scanner_pos[0])), 5, (255,0,0), cv.FILLED)
 
         # Render observation

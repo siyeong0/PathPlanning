@@ -20,17 +20,8 @@ def test_vor_graph_generation():
     for edge in contours.edges:
         v1, v2 = contours.vertices[edge[0]], contours.vertices[edge[1]]
         buffer = cv.line(buffer, (int(v1[1]), int(v1[0])), (int(v2[1]), int(v2[0])), (255,0,255), 1)
-    # Draw edges
-    for edge in voronoi.edges:
-        v1, v2 = voronoi.vertices[edge[0]], voronoi.vertices[edge[1]]
-        buffer = cv.line(buffer, (int(v1[1]), int(v1[0])), (int(v2[1]), int(v2[0])), (0,255,0), 1)
-    # Draw vertices
-    for v in voronoi.vertices:
-        buffer = cv.circle(buffer, (int(v[1]), int(v[0])), 3, (255,0,0), cv.FILLED)
-    # Draw target vertices
-    for i in target_indices:
-        v = voronoi.vertices[i]
-        buffer = cv.circle(buffer, (int(v[1]), int(v[0])), 3, (0,0,255), cv.FILLED)
+    # Draw vor graph
+    buffer = voronoi.draw(buffer, (255,0,0), (0,255,0))
     
     # Present
     buffer = np.swapaxes(buffer, 0, 1)

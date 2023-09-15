@@ -36,12 +36,7 @@ def test_scanner_control_with_vor_graph():
         buffer[np.where(scan_map == IN_VIEW)] = (0,128,128)
 
         # Draw graph
-        for edge in voronoi.edges:  # Draw edges
-            v1, v2 = voronoi.vertices[edge[0]], voronoi.vertices[edge[1]]
-            buffer = cv.line(buffer, (int(v1[1]), int(v1[0])), (int(v2[1]), int(v2[0])), (0,255,0), 1)
-        for v in voronoi.vertices:  # Draw vertices
-            v = (int(v[0]), int(v[1]))
-            buffer = cv.rectangle(buffer, (v[1]-2, v[0]-2), (v[1]+2, v[0]+2), (92,255,0), cv.FILLED)
+        buffer = voronoi.draw(buffer)
         for i in target_indices:    # Draw target vertices
             v = voronoi.vertices[i]
             v = (int(v[0]), int(v[1]))

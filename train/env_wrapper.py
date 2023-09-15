@@ -157,7 +157,7 @@ class EnvWrapper(gym.Env):
         world_buffer = cv.circle(world_buffer, (int(scanner_pos[1]), int(scanner_pos[0])), 5, (255,0,0), cv.FILLED)
 
         # Render observation
-        obs = self._get_obs()
+        obs = (self._get_obs()[0] /  int(255 / AGENT)).astype(np.uint8)
         obs_buffer[np.where(obs == UNKOWN)] = (0,0,0)
         obs_buffer[np.where(obs == EMPTY)] = (64,64,64)
         obs_buffer[np.where(obs == SCANNED)] = (255,0,255)
@@ -172,9 +172,4 @@ class EnvWrapper(gym.Env):
 
         obs_buffer = np.swapaxes(obs_buffer, 0, 1)
         cv.imshow("Test scanner control", cv.resize(obs_buffer, (512,512)))
-        key = cv.waitKey(16)
-
-        if key==27:     # ESC
-            terminate = True
-        elif key==ord(' '): # SPACE
-            cv.waitKey()
+        cv.waitKey(16)

@@ -17,10 +17,10 @@ def train_a2c():
     # ------------------------------------------------------------
     # Constants
     # ------------------------------------------------------------
-    name = "a2c_2e6"
+    name = "a2c"
     pt_name = ""
     num_envs = 32
-    num_timesteps = 2000000
+    num_timesteps = 1000000
     n_steps=2
     net_arch = dict(pi=[128, 64], vf=[128, 64])
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
@@ -40,7 +40,7 @@ def train_a2c():
     model = A2C("CnnPolicy", env, policy_kwargs=basic_kwargs, 
                     gamma=0.99, 
                     n_steps=n_steps,
-                    ent_coef=0.01,
+                    ent_coef=0.0,
                     gae_lambda=0.95,
                     learning_rate=1e-4,
                     device= "cuda" if torch.cuda.is_available() else "cpu")

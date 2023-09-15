@@ -38,7 +38,7 @@ def train_a2c():
     env = make_vec_env(EnvWrapper, n_envs=num_envs, seed=1)
 
     model = A2C("CnnPolicy", env, policy_kwargs=basic_kwargs, 
-                    gamma=0.99, 
+                    gamma=0.9997, 
                     n_steps=n_steps,
                     ent_coef=0.0,
                     gae_lambda=0.95,

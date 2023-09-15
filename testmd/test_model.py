@@ -10,7 +10,7 @@ def test_model(name:str):
     obs, _ = env.reset()
     done = True
     while True:
-        action, _ = model.predict(obs, deterministic=True)
+        action, _ = model.predict(obs, deterministic=False)
         obs, reward, done, _, _ = env.step(action)
         env.render()
 

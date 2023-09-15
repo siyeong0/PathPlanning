@@ -5,6 +5,7 @@ def test_env_wrapper():
     env = EnvWrapper()
 
     obs, _ = env.reset()
+    done = True
     while True:
         key = cv.waitKey()
         if key != -1:
@@ -16,7 +17,8 @@ def test_env_wrapper():
 
             elif key==ord('q'): rot_action = 1
             elif key==ord('e'): rot_action = 2
-        obs, reward, done, _, _ = env.step((tr_action, rot_action))
+            obs, reward, done, _, _ = env.step((tr_action, rot_action))
+            print(reward)
         env.render()
 
         if done:

@@ -34,7 +34,7 @@ class Scanner:
 
     def move(self, dir, dist):
         new_pos = self.position + dir * dist
-        valid = self._is_valid_pos(new_pos)
+        valid = self.world[int(new_pos[0]), int(new_pos[1])] == 0
         self.position = new_pos if valid else self.position
         return valid
     def moveUp(self, dist):

@@ -1,1 +1,2 @@
-from utils.generate_map import generate_random_map
+from utils.generate_map import *
+from utils.log_viewer import *

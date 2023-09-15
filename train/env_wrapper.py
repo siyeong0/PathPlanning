@@ -30,7 +30,7 @@ class EnvWrapper(gym.Env):
         self.world = None
         self.scanner = None
 
-        self.observation_space = spaces.Box(0, 255, self.obs_shape, dtype=np.uint8)
+        self.observation_space = spaces.Box(0, 255, (1, self.obs_shape[0], self.obs_shape[1]), dtype=np.uint8)
         self.action_space = spaces.MultiDiscrete([5,3])
 
         self.graph = None
@@ -105,7 +105,7 @@ class EnvWrapper(gym.Env):
             scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
         obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
 
-        return obs * int(255 / AGENT)
+        return obs[np.newaxis,:,:] * int(255 / AGENT)
     
     def _get_reward(self, scan_map:np.ndarray, is_valid:bool):
         if not is_valid:

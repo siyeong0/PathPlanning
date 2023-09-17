@@ -9,5 +9,5 @@ if __name__ == "__main__":
     #test_vor_graph_generation()
     #test_scanner_control_with_vor_graph()
     #test_env_wrapper()
-    test_model("a2c")
+    test_model("ppo_k3_10")
     pass

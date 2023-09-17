@@ -6,12 +6,12 @@ def to_straight(src, slice=None, val=1, border=True):
     dst = np.zeros_like(src, dtype=np.uint8)
     w, h = dst.shape
     if slice == None:
-        slice = int((w+h)/2 / 16)
+        slice = ((w+h)/2 / np.random.randint(4,32))
 
     stride_w = w / slice
     stride_h = h / slice
-    for sw in range(slice):
-        for sh in range(slice):
+    for sw in range(int(slice)):
+        for sh in range(int(slice)):
             rect = (int(sw * stride_w), int(sh * stride_h), int(stride_w), int(stride_h))
             sub_img = src[rect[0]:rect[0]+rect[2],rect[1]:rect[1]+rect[3]]
             num_total_pix = sub_img.shape[0] * sub_img.shape[1]
@@ -22,13 +22,13 @@ def to_straight(src, slice=None, val=1, border=True):
                 
     if border:
         dst[0:int(stride_w),:] = val
-        dst[int(stride_w) * (slice-1):dst.shape[0],:] = val
+        dst[int(stride_w) * int(slice-1):dst.shape[0],:] = val
         dst[:,0:int(stride_h)] = val
-        dst[:,int(stride_h) * (slice-1):dst.shape[1]] = val
+        dst[:,int(stride_h) * int(slice-1):dst.shape[1]] = val
     return dst
 
 def generate_random_map(shape=(256,256), options=None):
-    noise = generate_perlin_noise_2d((256,256), (4,4))
+    noise = generate_perlin_noise_2d(shape, (4,4))
     map = noise.copy()
     if "discrete" in options:
         map = np.zeros(map.shape, dtype=np.uint8)

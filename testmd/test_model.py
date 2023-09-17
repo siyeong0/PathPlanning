@@ -14,5 +14,8 @@ def test_model(name:str):
         obs, reward, done, _, _ = env.step(action)
         env.render()
 
+        if reward != 0:
+            print(reward)
+
         if done:
             obs, _ = env.reset()

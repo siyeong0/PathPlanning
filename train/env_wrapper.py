@@ -8,15 +8,16 @@ from scanner import *
 from pathplan import Graph, to_voronoi, extract_contour_graph
 
 REWARD = 1.0
-INVALID_ACTION_REWARD = -1.0
+CLEAR_REWARD = 10.0
+INVALID_ACTION_REWARD = -10.0
 
 class EnvWrapper(gym.Env):
     def __init__(self, 
-                 world_shape=(256,256),
+                 world_shape=(192,192),
                  obs_shape=(128,128),
-                 speed = 2.0,
+                 speed = 4.0,
                  ang_speed = 15,
-                 mpa_gen_options = ["discrete", "straight", "border"],
+                 map_gen_options = ["discrete", "straight", "border"],
                  display_shape = (1024,1024)
                  ):
         super(EnvWrapper, self).__init__()
@@ -24,14 +25,17 @@ class EnvWrapper(gym.Env):
         self.obs_shape = obs_shape
         self.speed = speed
         self.ang_speed = ang_speed
-        self.options = mpa_gen_options
+        self.options = map_gen_options
         self.display_shape = display_shape
     
         self.world = None
         self.scanner = None
 
-        self.observation_space = spaces.Box(0, 255, (1, self.obs_shape[0], self.obs_shape[1]), dtype=np.uint8)
-        self.action_space = spaces.MultiDiscrete([5,3])
+        self.num_obs_stack = 1
+        self.obs_buffer = None
+        self.observation_space = spaces.Box(0, 255, (self.num_obs_stack, self.obs_shape[0], self.obs_shape[1]), dtype=np.uint8)
+        # self.action_space = spaces.MultiDiscrete([4,3])
+        self.action_space = spaces.Discrete(6)
 
         self.graph = None
         self.target_indices = None
@@ -42,6 +46,7 @@ class EnvWrapper(gym.Env):
         self.world = generate_random_map(shape=self.world_shape, options=self.options)
         self.scanner = Scanner(self.world, 120, 48)
 
+        self.obs_buffer = [np.zeros(self.obs_shape, dtype=np.uint8) for _ in range(self.num_obs_stack)]
         self.graph = Graph([],[])
         self.target_indices = []
         self.num_target_nodes = 0
@@ -50,30 +55,43 @@ class EnvWrapper(gym.Env):
         return self._get_obs(), {}
     
     def step(self, action):
-        tr_action, rot_action = action
+        #tr_action, rot_action = action
         is_valid_action = True
-        # Translation
-        if tr_action == 0:
-            pass
-        elif tr_action == 1:
+        # # Translation
+        # if tr_action == 0:
+        #     is_valid_action = self.scanner.moveUp(self.speed)
+        # elif tr_action == 1:
+        #     is_valid_action = self.scanner.moveDown(self.speed)
+        # elif tr_action == 2:
+        #     is_valid_action = self.scanner.moveLeft(self.speed)
+        # elif tr_action == 3:
+        #     is_valid_action = self.scanner.moveRight(self.speed)
+        # else:
+        #     assert(False)
+        # # Rotation
+        # if rot_action == 0:
+        #     pass
+        # elif rot_action == 1:
+        #     self.scanner.rotate(self.ang_speed)
+        # elif rot_action == 2:
+        #     self.scanner.rotate(-self.ang_speed)
+        # else:
+        #     assert(False)
+        if action == 0:
             is_valid_action = self.scanner.moveUp(self.speed)
-        elif tr_action == 2:
+        elif action == 1:
             is_valid_action = self.scanner.moveDown(self.speed)
-        elif tr_action == 3:
+        elif action == 2:
             is_valid_action = self.scanner.moveLeft(self.speed)
-        elif tr_action == 4:
+        elif action == 3:
             is_valid_action = self.scanner.moveRight(self.speed)
-        else:
-            assert(False)
-        # Rotation
-        if rot_action == 0:
-            pass
-        elif rot_action == 1:
+        elif action == 4:
             self.scanner.rotate(self.ang_speed)
-        elif rot_action == 2:
+        elif action == 5:
             self.scanner.rotate(-self.ang_speed)
         else:
             assert(False)
+            
 
         obs = self._get_obs()
         reward = self._get_reward(self.scanner.scan_map, is_valid_action)
@@ -105,7 +123,12 @@ class EnvWrapper(gym.Env):
             scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
         obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
 
-        return obs[np.newaxis,:,:] * int(255 / AGENT)
+        obs = obs * int(255 / AGENT)
+        for i in range(1,self.num_obs_stack):
+            self.obs_buffer[i] = self.obs_buffer[i - 1]
+        self.obs_buffer[0] = obs
+
+        return np.array(self.obs_buffer)
     
     def _get_reward(self, scan_map:np.ndarray, is_valid:bool):
         if not is_valid:
@@ -130,7 +153,9 @@ class EnvWrapper(gym.Env):
                 reward = REWARD
 
             self.num_target_nodes = n_target_nodes
-            self.ep_terminate = (n_target_nodes == 0)
+            if n_target_nodes == 0:
+                self.ep_terminate = True
+                reward = CLEAR_REWARD
             
         return reward
             

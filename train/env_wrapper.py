@@ -22,7 +22,8 @@ class EnvWrapper(gym.Env):
                  ):
         super(EnvWrapper, self).__init__()
         self.world_shape = world_shape
-        self.obs_shape = obs_shape
+        #self.obs_shape = obs_shape
+        self.obs_shape = world_shape
         self.speed = speed
         self.ang_speed = ang_speed
         self.options = map_gen_options
@@ -104,29 +105,35 @@ class EnvWrapper(gym.Env):
 #-----------------------------------------------------------------------------------------------
     def _get_obs(self):
         pos_x, pos_y = self.scanner.position.astype(int)
-        obs_w, obs_h = self.obs_shape
-        top_left = (pos_x - int(obs_w / 2), pos_y - int(obs_h / 2))
-        bottom_right = (pos_x + int(obs_w / 2), pos_y + int(obs_h / 2))
+        # obs_w, obs_h = self.obs_shape
+        # top_left = (pos_x - int(obs_w / 2), pos_y - int(obs_h / 2))
+        # bottom_right = (pos_x + int(obs_w / 2), pos_y + int(obs_h / 2))
 
-        target_rect = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
-        offsets = [0 if target_rect[0] >= 0 else -target_rect[0],
-                   0 if target_rect[1] >= 0 else -target_rect[1],
-                   0 if target_rect[2] < self.world_shape[0] else target_rect[2]-(self.world_shape[0]-1),
-                   0 if target_rect[3] < self.world_shape[1] else target_rect[3]-(self.world_shape[1]-1)]
-        obs_rect = [offsets[0], offsets[1], (obs_w-1)-offsets[2], (obs_h-1)-offsets[3]]
-        map_rect = [obs_rect[0]+top_left[0], obs_rect[1]+top_left[1],
-                    obs_rect[2]+top_left[0], obs_rect[3]+top_left[1]]
+        # target_rect = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
+        # offsets = [0 if target_rect[0] >= 0 else -target_rect[0],
+        #            0 if target_rect[1] >= 0 else -target_rect[1],
+        #            0 if target_rect[2] < self.world_shape[0] else target_rect[2]-(self.world_shape[0]-1),
+        #            0 if target_rect[3] < self.world_shape[1] else target_rect[3]-(self.world_shape[1]-1)]
+        # obs_rect = [offsets[0], offsets[1], (obs_w-1)-offsets[2], (obs_h-1)-offsets[3]]
+        # map_rect = [obs_rect[0]+top_left[0], obs_rect[1]+top_left[1],
+        #             obs_rect[2]+top_left[0], obs_rect[3]+top_left[1]]
 
         scan_map, _ = self.scanner.scan()
-        obs = np.full(self.obs_shape, UNKOWN, dtype=np.uint8)
-        obs[obs_rect[0]:obs_rect[2], obs_rect[1]:obs_rect[3]] = \
-            scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
-        obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
+        # obs = np.full(self.obs_shape, UNKOWN, dtype=np.uint8)
+        # obs[obs_rect[0]:obs_rect[2], obs_rect[1]:obs_rect[3]] = \
+        #     scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
+        # obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
+
+        scan_map, _ = self.scanner.scan()
+        obs = scan_map
+        obs[pos_x, pos_y] = AGENT
 
         obs = obs * int(255 / AGENT)
         for i in range(1,self.num_obs_stack):
             self.obs_buffer[i] = self.obs_buffer[i - 1]
         self.obs_buffer[0] = obs
+
+        self.obs_buffer
 
         return np.array(self.obs_buffer)
     

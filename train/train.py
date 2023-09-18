@@ -40,10 +40,10 @@ def train_dqn():
                     batch_size=1024,
                     learning_starts=512,
                     tau=0.9,
-                    exploration_initial_eps=0.7,
-                    exploration_final_eps=0.04,
+                    exploration_initial_eps=0.5,
+                    exploration_final_eps=0.05,
                     exploration_fraction=0.01,
-                    learning_rate=linear_schedule(4e-3, 1e-5),
+                    learning_rate=linear_schedule(9e-3, 1e-4),
                     device= "cuda" if torch.cuda.is_available() else "cpu")
 
     model.set_logger(new_logger)

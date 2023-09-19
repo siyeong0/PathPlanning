@@ -7,8 +7,8 @@ from utils import generate_random_map
 from scanner import *
 from pathplan import Graph, to_voronoi, extract_contour_graph
 
-REWARD = 1.0
-CLEAR_REWARD = 10.0
+DEFAULT_REWARD = 0.1
+COEFF_REWARD = 0.1
 INVALID_ACTION_REWARD = -10.0
 
 class EnvWrapper(gym.Env):
@@ -42,6 +42,7 @@ class EnvWrapper(gym.Env):
         self.target_indices = None
         self.num_target_nodes = None
         self.ep_terminate = None
+        self.num_prev_scanned = None
 
     def reset(self, seed=None, options=None):
         self.world = generate_random_map(shape=self.world_shape, options=self.options)
@@ -52,7 +53,8 @@ class EnvWrapper(gym.Env):
         self.target_indices = []
         self.num_target_nodes = 0
         self.ep_terminate = False
-
+        self.num_prev_scanned = 0
+        
         return self._get_obs(), {}
     
     def step(self, action):
@@ -105,28 +107,24 @@ class EnvWrapper(gym.Env):
 #-----------------------------------------------------------------------------------------------
     def _get_obs(self):
         pos_x, pos_y = self.scanner.position.astype(int)
-        # obs_w, obs_h = self.obs_shape
-        # top_left = (pos_x - int(obs_w / 2), pos_y - int(obs_h / 2))
-        # bottom_right = (pos_x + int(obs_w / 2), pos_y + int(obs_h / 2))
+        obs_w, obs_h = self.obs_shape
+        top_left = (pos_x - int(obs_w / 2), pos_y - int(obs_h / 2))
+        bottom_right = (pos_x + int(obs_w / 2), pos_y + int(obs_h / 2))
 
-        # target_rect = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
-        # offsets = [0 if target_rect[0] >= 0 else -target_rect[0],
-        #            0 if target_rect[1] >= 0 else -target_rect[1],
-        #            0 if target_rect[2] < self.world_shape[0] else target_rect[2]-(self.world_shape[0]-1),
-        #            0 if target_rect[3] < self.world_shape[1] else target_rect[3]-(self.world_shape[1]-1)]
-        # obs_rect = [offsets[0], offsets[1], (obs_w-1)-offsets[2], (obs_h-1)-offsets[3]]
-        # map_rect = [obs_rect[0]+top_left[0], obs_rect[1]+top_left[1],
-        #             obs_rect[2]+top_left[0], obs_rect[3]+top_left[1]]
-
-        scan_map, _ = self.scanner.scan()
-        # obs = np.full(self.obs_shape, UNKOWN, dtype=np.uint8)
-        # obs[obs_rect[0]:obs_rect[2], obs_rect[1]:obs_rect[3]] = \
-        #     scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
-        # obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
+        target_rect = [top_left[0], top_left[1], bottom_right[0], bottom_right[1]]
+        offsets = [0 if target_rect[0] >= 0 else -target_rect[0],
+                   0 if target_rect[1] >= 0 else -target_rect[1],
+                   0 if target_rect[2] < self.world_shape[0] else target_rect[2]-(self.world_shape[0]-1),
+                   0 if target_rect[3] < self.world_shape[1] else target_rect[3]-(self.world_shape[1]-1)]
+        obs_rect = [offsets[0], offsets[1], (obs_w-1)-offsets[2], (obs_h-1)-offsets[3]]
+        map_rect = [obs_rect[0]+top_left[0], obs_rect[1]+top_left[1],
+                    obs_rect[2]+top_left[0], obs_rect[3]+top_left[1]]
 
         scan_map, _ = self.scanner.scan()
-        obs = scan_map
-        obs[pos_x, pos_y] = AGENT
+        obs = np.full(self.obs_shape, UNKOWN, dtype=np.uint8)
+        obs[obs_rect[0]:obs_rect[2], obs_rect[1]:obs_rect[3]] = \
+            scan_map[map_rect[0]:map_rect[2], map_rect[1]:map_rect[3]]
+        obs[pos_x-top_left[0], pos_y-top_left[1]] = AGENT
 
         obs = obs * int(255 / AGENT)
         for i in range(1,self.num_obs_stack):
@@ -150,20 +148,25 @@ class EnvWrapper(gym.Env):
         valid_map[np.where(scan_map==EMPTY)] = True
         valid_map[np.where(scan_map==IN_VIEW)] = True
 
-        reward = 0.0
+        reward = 0.1
 
-        if len(contours.vertices) > 4:
-            self.graph, self.target_indices = to_voronoi(contours, valid_map)
+        # if len(contours.vertices) > 4:
+        #     self.graph, self.target_indices = to_voronoi(contours, valid_map)
 
-            n_target_nodes = len(self.target_indices)
-            if n_target_nodes < self.num_target_nodes:
-                reward = REWARD
+        #     n_target_nodes = len(self.target_indices)
+        #     if n_target_nodes < self.num_target_nodes:
+        #         reward = REWARD
 
-            self.num_target_nodes = n_target_nodes
-            if n_target_nodes == 0:
-                self.ep_terminate = True
-                reward = CLEAR_REWARD
+        #     self.num_target_nodes = n_target_nodes
+        #     if n_target_nodes == 0:
+        #         self.ep_terminate = True
+        #         reward = CLEAR_REWARD
             
+        num_curr_scanned = len(np.where(scan_map==SCANNED)[0])
+        reward += (num_curr_scanned - self.num_prev_scanned) * COEFF_REWARD
+        self.num_prev_scanned = num_curr_scanned
+        assert(reward > 0)
+
         return reward
             
 

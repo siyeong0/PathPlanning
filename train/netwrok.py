@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
 class BasicNet(BaseFeaturesExtractor):
-    def __init__(self, observation_space, features_dim=1024):
+    def __init__(self, observation_space, features_dim=512):
         super().__init__(observation_space, features_dim)
         c, w, h = observation_space.shape
         self.convs = nn.Sequential(
@@ -26,7 +26,7 @@ class BasicNet(BaseFeaturesExtractor):
         return self.linear(x)
     
 class Conv7K3(BaseFeaturesExtractor):
-    def __init__(self, observation_space, features_dim=1024):
+    def __init__(self, observation_space, features_dim=512):
         super().__init__(observation_space, features_dim)
         c, w, h = observation_space.shape
         self.convs = nn.Sequential(

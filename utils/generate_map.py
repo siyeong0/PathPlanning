@@ -6,7 +6,7 @@ def to_straight(src, slice=None, val=1, border=True):
     dst = np.zeros_like(src, dtype=np.uint8)
     w, h = dst.shape
     if slice == None:
-        slice = ((w+h)/2 / np.random.randint(4,32))
+        slice = ((w+h)/2 / np.random.randint(8,16))
 
     stride_w = w / slice
     stride_h = h / slice
@@ -27,7 +27,7 @@ def to_straight(src, slice=None, val=1, border=True):
         dst[:,int(stride_h) * int(slice-1):dst.shape[1]] = val
     return dst
 
-def generate_random_map(shape=(256,256), options=None):
+def generate_random_map(shape=(256,256), options=["discrete","straight"]):
     noise = generate_perlin_noise_2d(shape, (4,4))
     map = noise.copy()
     if "discrete" in options:

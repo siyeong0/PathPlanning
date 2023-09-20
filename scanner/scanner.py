@@ -49,6 +49,9 @@ class Scanner:
     def rotate(self, deg):
         self.yaw += deg * np.pi / 180
         self.yaw %= 2 * np.pi
+    def lookTo(self, deg):
+        self.yaw = deg * np.pi / 180
+        self.yaw %= 2 * np.pi
 
     def scan(self) -> np.ndarray:
         self.scan_map[np.where(self.scan_map==IN_VIEW)] = EMPTY
@@ -57,7 +60,7 @@ class Scanner:
         num_occupied_pixels = 0
         pos_x, pos_y = self.position[0], self.position[1]
 
-        n_slice = 256
+        n_slice = 128
         fd = self.fov / n_slice
         for i in range(n_slice):
             dir = self.yaw - self.fov / 2 + fd * i

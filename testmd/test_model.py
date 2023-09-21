@@ -1,9 +1,9 @@
 import cv2 as cv
 from train.env_wrapper import Scanning_a6, Scanning_a16
-from stable_baselines3 import A2C
+from stable_baselines3 import DQN, A2C, PPO
 
 def test_model(name:str):
-    model = A2C.load(f"./checkpoints/{name}/{name}")
+    model = PPO.load(f"./checkpoints/{name}/{name}")
 
     env = Scanning_a16()
 

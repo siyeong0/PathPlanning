@@ -264,21 +264,21 @@ class Scanning_a16(gym.Env):
         elif action == 7:
             is_valid_action = self.scanner.move(np.array([-1,1]), self.speed)
         elif action == 8:
-            self.scanner.lookTo(0)
+            is_valid_action = self.scanner.lookTo(0)
         elif action == 9:
-            self.scanner.lookTo(45)
+            is_valid_action = self.scanner.lookTo(45)
         elif action == 10:
-            self.scanner.lookTo(90)
+            is_valid_action = self.scanner.lookTo(90)
         elif action == 11:
-            self.scanner.lookTo(135)
+            is_valid_action = self.scanner.lookTo(135)
         elif action == 12:
-            self.scanner.lookTo(180)
+            is_valid_action = self.scanner.lookTo(180)
         elif action == 13:
-            self.scanner.lookTo(225)
+            is_valid_action = self.scanner.lookTo(225)
         elif action == 14:
-            self.scanner.lookTo(270)
+            is_valid_action = self.scanner.lookTo(270)
         elif action == 15:
-            self.scanner.lookTo(315)
+            is_valid_action = self.scanner.lookTo(315)
         else:
             assert(False)
             

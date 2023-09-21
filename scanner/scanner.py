@@ -32,26 +32,30 @@ class Scanner:
         self.max_depth = max_depth
         self.scan_map = np.full(self.world.shape, UNKOWN, dtype=np.uint8)
 
-    def move(self, dir, dist):
+    def move(self, dir, dist) -> bool:
         new_pos = self.position + dir * dist
         valid = self.world[int(new_pos[0]), int(new_pos[1])] == 0
         self.position = new_pos if valid else self.position
         return valid
-    def moveUp(self, dist):
+    def moveUp(self, dist) -> bool:
         return self.move(np.array([0.0,-1.0]), dist)
-    def moveDown(self, dist):
+    def moveDown(self, dist) -> bool:
         return self.move(np.array([0.0,1.0]), dist)
-    def moveLeft(self, dist):
+    def moveLeft(self, dist) -> bool:
         return self.move(np.array([-1.0,0.0]), dist)
-    def moveRight(self, dist):
+    def moveRight(self, dist) -> bool:
         return self.move(np.array([1.0,0.0]), dist)
 
     def rotate(self, deg):
         self.yaw += deg * np.pi / 180
         self.yaw %= 2 * np.pi
-    def lookTo(self, deg):
+    def lookTo(self, deg) -> bool:
+        yaw = deg * np.pi / 180
+        if yaw == self.yaw:
+            return False
         self.yaw = deg * np.pi / 180
         self.yaw %= 2 * np.pi
+        return True
 
     def scan(self) -> np.ndarray:
         self.scan_map[np.where(self.scan_map==IN_VIEW)] = EMPTY

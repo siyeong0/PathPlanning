@@ -133,10 +133,10 @@ def train_ppo():
     # ------------------------------------------------------------
     # Constants
     # ------------------------------------------------------------
-    name = "ppo_bs_02"
-    pt_name = ""
+    name = "ppo_bs_02_i2"
+    pt_name = "ppo_bs_02_i0"
     num_envs = 16
-    num_timesteps = 1000000
+    num_timesteps = 1500000
     net_arch = dict(pi=[128], vf=[128])
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
@@ -153,7 +153,7 @@ def train_ppo():
     env = make_vec_env(Scanning_a16, n_envs=num_envs, seed=1)
 
     model = PPO("CnnPolicy", env, policy_kwargs=basic_kwargs, 
-                    learning_rate=1e-3,
+                    learning_rate=linear_schedule(4e-3, 4e-5),
                     gamma=0.99, 
                     n_epochs=10,
                     batch_size=2048,
@@ -165,7 +165,7 @@ def train_ppo():
                     device= "cuda" if torch.cuda.is_available() else "cpu")
     # Load pretrained model
     if pt_name != "" and pt_name != None:
-        pt_model = A2C.load(f"./checkpoints/{pt_name}/{pt_name}", env=env, 
+        pt_model = PPO.load(f"./checkpoints/{pt_name}/{pt_name}", env=env, 
                             device="cuda" if torch.cuda.is_available() else "cpu")
         model.policy.features_extractor = pt_model.policy.features_extractor
         model.policy.mlp_extractor = pt_model.policy.mlp_extractor

@@ -34,7 +34,12 @@ class Scanner:
 
     def move(self, dir, dist) -> bool:
         new_pos = self.position + dir * dist
-        valid = self.world[int(new_pos[0]), int(new_pos[1])] == 0
+        ix, iy = int(new_pos[0]), int(new_pos[1])
+        if ix < 0 or ix >= self.world.shape[0] or iy < 0 or iy >= self.world.shape[1] or \
+             self.world[int(new_pos[0]), int(new_pos[1])] != 0:
+            valid = False
+        else:
+            valid = True
         self.position = new_pos if valid else self.position
         return valid
     def moveUp(self, dist) -> bool:

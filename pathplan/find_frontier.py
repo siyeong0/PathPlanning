@@ -14,7 +14,7 @@ def find_frontier(map:np.ndarray):
         for cbb in cb:
             for c in cbb:
                 cy, cx = c
-                if cx == 0 or cx == shape[0] - 1 or cy == 0 or cy == shape[1]:
+                if cx == 0 or cx == shape[0] - 1 or cy == 0 or cy == shape[1] - 1:
                     continue
                 if map[cx+1,cy] == UNKOWN or map[cx-1,cy] == UNKOWN or map[cx,cy+1] == UNKOWN or map[cx,cy-1] == UNKOWN:
                     frontier_points.append(np.array([cx, cy]))

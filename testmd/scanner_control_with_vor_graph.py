@@ -6,7 +6,7 @@ from scanner import *
 from pathplan import Graph, to_voronoi, extract_contour_graph
 
 def test_scanner_control_with_vor_graph():
-    world = generate_random_map(options=["discrete", "straight", "border"])
+    world = generate_random_map(options=["discrete", "straight"])
     scanner = Scanner(world, 120, 48)
 
     terminate = False

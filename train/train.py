@@ -1,5 +1,5 @@
 import gym
-from train.env_wrapper import Scanning_a6, Scanning_a16
+from train.env_wrapper import Scanning_a16
 
 from stable_baselines3 import A2C, PPO, DQN
 from stable_baselines3.common.logger import configure
@@ -19,7 +19,7 @@ def train_dqn():
     # ------------------------------------------------------------
     name = "dqn_bs_01"
     num_timesteps = 1000000
-    net_arch = [128]
+    net_arch = [128, 64]
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
@@ -32,17 +32,16 @@ def train_dqn():
     # ------------------------------------------------------------
     # Train
     # ------------------------------------------------------------
-    env = Scanning_a6()
+    env = Scanning_a16()
 
     model = DQN("CnnPolicy", env, policy_kwargs=basic_kwargs, 
                     gamma=0.99, 
                     buffer_size=30000, 
                     batch_size=512,
-                    #tau=0.05,
                     learning_starts=2000,
                     exploration_initial_eps=0.5,
                     exploration_final_eps=0.05,
-                    exploration_fraction=0.01,
+                    exploration_fraction=0.05,
                     learning_rate=linear_schedule(9e-3, 1e-4),
                     device= "cuda" if torch.cuda.is_available() else "cpu")
 
@@ -71,12 +70,12 @@ def train_a2c():
     # ------------------------------------------------------------
     # Constants
     # ------------------------------------------------------------
-    name = "a2c_c7_01"
+    name = "a2c_bs_01"
     pt_name = ""
     num_envs = 16
     num_timesteps = 1000000
     net_arch = dict(pi=[128, 64], vf=[128, 64])
-    basic_kwargs = dict(features_extractor_class=Conv7K3, activation_fn=torch.nn.ReLU, net_arch=net_arch)
+    basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
     checkpoint_callback = CheckpointCallback(
@@ -88,7 +87,7 @@ def train_a2c():
     # ------------------------------------------------------------
     # Train
     # ------------------------------------------------------------
-    env = make_vec_env(Scanning_a6, n_envs=num_envs, seed=1)
+    env = make_vec_env(Scanning_a16, n_envs=num_envs, seed=1)
 
     model = A2C("CnnPolicy", env, policy_kwargs=basic_kwargs, 
                     gamma=0.99, 
@@ -133,11 +132,11 @@ def train_ppo():
     # ------------------------------------------------------------
     # Constants
     # ------------------------------------------------------------
-    name = "ppo_bs_02_i2"
-    pt_name = "ppo_bs_02_i0"
+    name = "ppo_bs_01"
+    pt_name = ""
     num_envs = 16
-    num_timesteps = 1500000
-    net_arch = dict(pi=[128], vf=[128])
+    num_timesteps = 1000000
+    net_arch = dict(pi=[128, 64], vf=[128, 64])
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])

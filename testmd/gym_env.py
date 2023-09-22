@@ -18,8 +18,10 @@ def test_env_wrapper():
             elif key==ord('i'): action = 10
             elif key==ord('o'): action = 12
             elif key==ord('p'): action = 14
-            obs, reward, done, _, _ = env.step(action)
+            else: action = -1
+            if action >= 0 and action <16:
+                obs, reward, done, _, _ = env.step(action)
         env.render()
 
-        if done:
-            obs, _ = env.reset()
+        # if done:
+        #     obs, _ = env.reset()

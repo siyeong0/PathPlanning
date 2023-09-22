@@ -1,5 +1,5 @@
 import cv2 as cv
-from train.env_wrapper import Scanning_a6, Scanning_a16
+from train.env_wrapper import Scanning_a16
 from stable_baselines3 import DQN, A2C, PPO
 
 def test_model(name:str):

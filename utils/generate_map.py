@@ -28,7 +28,7 @@ def to_straight(src, slice=None, val=1, border=True):
     return dst
 
 def generate_random_map(shape=(256,256), options=["discrete","straight"]):
-    noise = generate_perlin_noise_2d(shape, (4,4))
+    noise = generate_perlin_noise_2d(shape, (1,1))
     map = noise.copy()
     if "discrete" in options:
         map = np.zeros(map.shape, dtype=np.uint8)

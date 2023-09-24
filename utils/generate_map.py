@@ -6,7 +6,7 @@ def to_straight(src, slice=None, val=1, border=True):
     dst = np.zeros_like(src, dtype=np.uint8)
     w, h = dst.shape
     if slice == None:
-        slice = ((w+h)/2 / np.random.randint(8,16))
+        slice = ((w+h)/2 / np.random.randint(16,32))
 
     stride_w = w / slice
     stride_h = h / slice

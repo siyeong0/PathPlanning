@@ -1,5 +1,5 @@
 import gym
-from train.env_wrapper import Scanning_a16
+from train.env_wrapper import Scanning_a6
 
 from stable_baselines3 import A2C, PPO, DQN
 from stable_baselines3.common.logger import configure
@@ -18,13 +18,13 @@ def train_dqn():
     # Constants
     # ------------------------------------------------------------
     name = "dqn_bs_01"
-    num_timesteps = 1000000
+    num_timesteps = 100000
     net_arch = [128, 64]
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
     checkpoint_callback = CheckpointCallback(
-        save_freq=int(50000),
+        save_freq=int(3000),
         save_path=f"./checkpoints/{name}/cp/",
         name_prefix=name,
         save_replay_buffer=False,
@@ -32,17 +32,18 @@ def train_dqn():
     # ------------------------------------------------------------
     # Train
     # ------------------------------------------------------------
-    env = Scanning_a16()
+    env = Scanning_a6()
 
-    model = DQN("CnnPolicy", env, policy_kwargs=basic_kwargs, 
-                    gamma=0.99, 
-                    buffer_size=30000, 
-                    batch_size=512,
-                    learning_starts=2000,
-                    exploration_initial_eps=0.5,
-                    exploration_final_eps=0.05,
+    model = DQN("CnnPolicy", env, #policy_kwargs=basic_kwargs, 
+                    # gamma=0.99, 
+                    buffer_size=10000, 
+                    # batch_size=64,
+                    target_update_interval=10000,
+                    learning_starts=100,
+                    exploration_initial_eps=1.0,
+                    exploration_final_eps=0.1,
                     exploration_fraction=0.05,
-                    learning_rate=linear_schedule(9e-3, 1e-4),
+                    learning_rate=0.0001,
                     device= "cuda" if torch.cuda.is_available() else "cpu")
 
     model.set_logger(new_logger)
@@ -72,7 +73,7 @@ def train_a2c():
     # ------------------------------------------------------------
     name = "a2c_bs_01"
     pt_name = ""
-    num_envs = 16
+    num_envs = 48
     num_timesteps = 1000000
     net_arch = dict(pi=[128, 64], vf=[128, 64])
     basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
@@ -87,14 +88,14 @@ def train_a2c():
     # ------------------------------------------------------------
     # Train
     # ------------------------------------------------------------
-    env = make_vec_env(Scanning_a16, n_envs=num_envs, seed=1)
+    env = make_vec_env(Scanning_a6, n_envs=num_envs, seed=1)
 
     model = A2C("CnnPolicy", env, policy_kwargs=basic_kwargs, 
                     gamma=0.99, 
-                    n_steps=64,
+                    n_steps=5,
                     ent_coef=0.0,
                     gae_lambda=0.95,
-                    learning_rate=linear_schedule(7e-4, 7e-4),
+                    learning_rate=1e-3,
                     device= "cuda" if torch.cuda.is_available() else "cpu")
     # Load pretrained model
     if pt_name != "" and pt_name != None:
@@ -106,8 +107,6 @@ def train_a2c():
         model.policy.value_net = pt_model.policy.value_net
     model.set_logger(new_logger)
 
-    model.policy.features_extractor.training = False
-    model.policy.mlp_extractor.training = False
     model = model.learn(total_timesteps=num_timesteps, 
                         callback=checkpoint_callback)
 
@@ -134,14 +133,14 @@ def train_ppo():
     # ------------------------------------------------------------
     name = "ppo_bs_01"
     pt_name = ""
-    num_envs = 16
+    num_envs = 4
     num_timesteps = 1000000
-    net_arch = dict(pi=[128, 64], vf=[128, 64])
-    basic_kwargs = dict(features_extractor_class=BasicNet, activation_fn=torch.nn.ReLU, net_arch=net_arch)
+    net_arch = dict(pi=[256, 128, 64], vf=[256, 128, 64])
+    basic_kwargs = dict(features_extractor_class=BasicNet, net_arch=net_arch)
     log_path = f"./checkpoints/{name}/log/"
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
     checkpoint_callback = CheckpointCallback(
-        save_freq=int(50000 / num_envs),
+        save_freq=int(20000 / num_envs),
         save_path=f"./checkpoints/{name}/cp/",
         name_prefix=name,
         save_replay_buffer=False,
@@ -149,18 +148,18 @@ def train_ppo():
     # ------------------------------------------------------------
     # Train
     # ------------------------------------------------------------
-    env = make_vec_env(Scanning_a16, n_envs=num_envs, seed=1)
+    env = make_vec_env(Scanning_a6, n_envs=num_envs, seed=1)
 
     model = PPO("CnnPolicy", env, policy_kwargs=basic_kwargs, 
-                    learning_rate=linear_schedule(4e-3, 4e-5),
+                    learning_rate=0.0001,
                     gamma=0.99, 
                     n_epochs=10,
-                    batch_size=2048,
-                    n_steps=2048,
+                    batch_size=512,
+                    n_steps=128,
                     vf_coef=0.5,
                     ent_coef=0.0,
                     gae_lambda=0.95,
-                    clip_range=0.3,
+                    clip_range=0.2,
                     device= "cuda" if torch.cuda.is_available() else "cpu")
     # Load pretrained model
     if pt_name != "" and pt_name != None:
@@ -172,8 +171,6 @@ def train_ppo():
         model.policy.value_net = pt_model.policy.value_net
     model.set_logger(new_logger)
 
-    model.policy.features_extractor.training = False
-    model.policy.mlp_extractor.training = False
     model = model.learn(total_timesteps=num_timesteps, 
                         callback=checkpoint_callback)
 

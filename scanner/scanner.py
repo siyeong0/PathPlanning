@@ -27,7 +27,7 @@ class Scanner:
                                       float(np.random.randint(0,self.world.shape[1]))])
             if self.world[int(self.position[0]), int(self.position[1])] == 0:
                 break
-        self.yaw = 0.0 
+        self.yaw = np.random.random() * np.pi * 2
         self.fov = FOV /180 * np.pi
         self.max_depth = max_depth
         self.scan_map = np.full(self.world.shape, UNKOWN, dtype=np.uint8)
@@ -62,7 +62,7 @@ class Scanner:
         self.yaw %= 2 * np.pi
         return True
 
-    def scan(self) -> np.ndarray:
+    def scan(self):
         self.scan_map[np.where(self.scan_map==IN_VIEW)] = EMPTY
         self.scan_map[np.where(self.scan_map==AGENT)] = EMPTY
 
@@ -71,6 +71,7 @@ class Scanner:
 
         n_slice = 128
         fd = self.fov / n_slice
+        bv = False
         for i in range(n_slice):
             dir = self.yaw - self.fov / 2 + fd * i
             curr_x = pos_x + np.cos(dir)
@@ -85,13 +86,14 @@ class Scanner:
                         num_occupied_pixels += 1
                     break
                 else:
+                    if self.scan_map[x, y] == UNKOWN:
+                        bv = True
                     self.scan_map[x, y] = IN_VIEW
                 curr_x += np.cos(dir)
                 curr_y += + np.sin(dir)
-        
         self.scan_map[int(self.position[0]), int(self.position[1])] = AGENT
 
-        return self.scan_map.copy(), num_occupied_pixels
+        return self.scan_map.copy(), num_occupied_pixels, bv
 
     def setFOV(self, deg):
         self.fov = deg / np.pi

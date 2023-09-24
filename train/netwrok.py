@@ -8,8 +8,10 @@ class BasicNet(BaseFeaturesExtractor):
         super().__init__(observation_space, features_dim)
         c, w, h = observation_space.shape
         self.convs = nn.Sequential(
-        nn.Conv2d(c, 32, 8, stride=4, padding=0), nn.ReLU(),
-        nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(),
+        nn.Conv2d(c, 32, 8, stride=1, padding=0), nn.ReLU(),
+        nn.Conv2d(32, 64, 3, stride=2, padding=0), nn.ReLU(),
+        nn.Conv2d(64, 64, 3, stride=2, padding=0), nn.ReLU(),
+        nn.Conv2d(64, 64, 3, stride=2, padding=0), nn.ReLU(),
         nn.Conv2d(64, 64, 3, stride=2, padding=0), nn.ReLU(),
         nn.Flatten()
      )

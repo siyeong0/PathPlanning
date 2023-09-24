@@ -1,11 +1,11 @@
 import cv2 as cv
-from train.env_wrapper import Scanning_a16
+from train.env_wrapper import Scanning_a6
 from stable_baselines3 import DQN, A2C, PPO
 
 def test_model(name:str):
     model = PPO.load(f"./checkpoints/{name}/{name}")
 
-    env = Scanning_a16()
+    env = Scanning_a6()
 
     obs, _ = env.reset()
     done = False
@@ -16,7 +16,7 @@ def test_model(name:str):
         env.render()
         reward_sum += reward
 
-        print(reward_sum)
+        print(reward)
 
         if done:
             obs, _ = env.reset()

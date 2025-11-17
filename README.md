@@ -23,7 +23,7 @@ This project performs:
 
 Frontier extraction provides interpretable, efficient exploration targets.
 
-## 🗺️ Voronoi Diagram–Based Path Graph Reduction  
+### 🗺️ Voronoi Diagram–Based Path Graph Reduction  
 Large grid maps make graph search expensive.  
 To solve this, the project constructs a **Voronoi diagram over the free-space** to generate a skeletonized road graph.
 
